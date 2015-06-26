@@ -1,0 +1,9 @@
+body {}
+
+h1, h2 {}
+ul {list-style: none; padding-left: 0;}
+li {}
+#wrapper {display:table; width:100%;}
+#content {display:table-cell; vertical-align: middle; text-align: center;}
+#inputBox {width:15em;}
+.error {color: #8B0000;}

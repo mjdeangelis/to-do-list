@@ -2,7 +2,6 @@
 //add LocalStorage
 //add validation
 //remove alert boxes and add html errors
-//add edit function
 //redo remove function
 
 var config = {
@@ -19,14 +18,12 @@ var config = {
 	deleteLinkClass: "delete-link",
 	editLinkClass: "edit-link",
 	saveButtonClass: "save-btn",
-	listItemValueClass: "item-value",
-	createFormHtml: true
 }
 
 var todoList = (function(config) {
 
 
-	//create initial html elements
+	//Create initial html elements
 	createInputBox();
 	createAddButton();
 	createListHtml();
@@ -35,114 +32,164 @@ var todoList = (function(config) {
 		inputBox = document.getElementById(config.inputBoxId),
 		list = document.getElementById(config.listId);
 
-	addButton.addEventListener("click", addItem);
+	var errors = [];
+	var norepeat = false;
 
-	function createInputBox() {
-		var inputBox = document.createElement("input");
-		inputBox.setAttribute("id", config.inputBoxId);
-		inputBox.setAttribute("placeholder", "What needs to be done?");
-		inputBox.setAttribute("onkeydown", "if (event.keyCode == 13) document.getElementById('btnAdd').click()");
+		function validate() {
+			if (!norepeat && errors.length > 0) {
+				createErrors(errors);
+				norepeat = true;
+			}
+			else {
+				removeErrors(errors);
+			}
+		}
+		
 
-		document.body.appendChild(inputBox);
-	}
+    	addButton.addEventListener("click", addItem);
 
-	function createAddButton() {
-		var addButton = document.createElement("button");
-		addButton.setAttribute("id", config.addButtonId);
-		addButton.setAttribute("type", "submit");
-		addButton.setAttribute("for", "inputBox");
-		addButton.innerHTML = config.addButtonText;
+		//
+		//Factory Functions
+		//
+		function createInputBox() {
+			var inputBox = document.createElement("input");
+			inputBox.setAttribute("id", config.inputBoxId);
+			inputBox.setAttribute("placeholder", "What needs to be done?");
+			inputBox.setAttribute("onkeydown", "if (event.keyCode == 13) document.getElementById('btnAdd').click()");
 
-		document.body.appendChild(addButton);
-	}
-
-	function createRemoveButton() {
-		var removeButton = document.createElement("button");
-		removeButton.setAttribute("id", config.removeButtonId);
-		removeButton.innerHTML = config.removeButtonText;
-		removeButton.addEventListener("click", removeItem);
-
-		return removeButton;
-	}
-
-	function createEditButton() {
-		var editButton = document.createElement("button");
-		editButton.setAttribute("id", config.editButtonId);
-		editButton.innerHTML = config.editButtonText;
-		editButton.addEventListener("click", editItem);
-
-		return editButton;
-	}
-
-	function createSaveButton() {
-		var saveButton = document.createElement("save");
-		saveButton.setAttribute("id", config.saveButtonId);
-		saveButton.innerHTML = config.saveButtonText;
-		saveButton.addEventListener("click", saveItem);
-
-	}
-
-	function createListHtml() {
-		var list = document.createElement("ul");
-		list.setAttribute("id", config.listId);
-
-		document.body.appendChild(list);
-	}
-
-	function addItem() {
-		var listElement = document.createElement('li'),
-		    span = document.createElement('span');
-
-		if (inputBox.value) {
-			span.innerHTML = inputBox.value;
-
-			listElement.appendChild(span);
-			listElement.appendChild(createEditButton());
-			listElement.appendChild(createRemoveButton());
-			
-
-			list.appendChild(listElement);
-		} else {
-			alert("to-do item can't be empty");
+			document.getElementById("content").appendChild(inputBox);
 		}
 
-		inputBox.value = "";
+		function createAddButton() {
+			var addButton = document.createElement("button");
+			addButton.setAttribute("id", config.addButtonId);
+			addButton.setAttribute("type", "submit");
+			addButton.setAttribute("for", "inputBox");
+			addButton.innerHTML = config.addButtonText;
 
-	}
+			document.getElementById("content").appendChild(addButton);
+		}
 
-	function removeItem() {
-		var parent = this.parentNode.parentNode, //ul
-			child = this.parentNode; //li
-		parent.removeChild(child);
+		function createRemoveButton() {
+			var removeButton = document.createElement("button");
+			removeButton.setAttribute("id", config.removeButtonId);
+			removeButton.innerHTML = config.removeButtonText;
+			removeButton.addEventListener("click", removeItem);
 
-	}
+			return removeButton;
+		}
 
-	function editItem() {
-		var currentText = this.previousSibling.innerHTML;
-		var span = this.previousSibling;
+		function createEditButton() {
+			var editButton = document.createElement("button");
+			editButton.setAttribute("id", config.editButtonId);
+			editButton.innerHTML = config.editButtonText;
+			editButton.addEventListener("click", editItem);
 
-		span.innerHTML = "<input type='text' value='"+currentText+"' >";
+			return editButton;
+		}
 
-		//change edit button to save button
-		this.setAttribute("id", config.saveButtonId);
-		this.innerHTML = config.saveButtonText;
-		this.removeEventListener("click", editItem);
-		this.addEventListener("click", saveItem);
+		function createSaveButton() {
+			var saveButton = document.createElement("save");
+			saveButton.setAttribute("id", config.saveButtonId);
+			saveButton.innerHTML = config.saveButtonText;
+			saveButton.addEventListener("click", saveItem);
 
-	}
+		}
 
-	function saveItem() {
-		var currentText = this.previousSibling.childNodes[0].value;
-		console.log(currentText);
-		var span = this.previousSibling;
+		function createErrors(errors) {
+			var errorContainer = document.createElement("ul");
+			errorContainer.setAttribute("id", "error-container");
 
-		span.innerHTML = currentText;
+			for (i = 0; i < errors.length; i++) {
+				var errorItem = document.createElement("li");
+				errorItem.setAttribute("class", "error");
+				errorItem.innerHTML = errors[i];
+				errorContainer.appendChild(errorItem);
+			}
 
-		//change save button to sedit button
-		this.setAttribute("id", config.editButtonId);
-		this.innerHTML = config.editButtonText;
-		this.removeEventListener("click", saveItem);
-		this.addEventListener("click", editItem);
+			document.getElementById("content").insertBefore(errorContainer, inputBox);
 
-	}
+		}
+
+		function removeErrors(errors) {
+			errors.length = 0;  //empties array
+			document.getElementById("error-container").innerHTML = "";
+			var container = document.getElementById("error-container");
+            var content = container.innerHTML;
+            container.innerHTML= content;
+		}
+
+		function createListHtml() {
+			var list = document.createElement("ul");
+			list.setAttribute("id", config.listId);
+
+			document.getElementById("content").appendChild(list);
+		}
+
+		//
+		//Action Functions
+		//
+		function addItem() {
+			var listElement = document.createElement('li'),
+			    span = document.createElement('span');
+
+			if (inputBox.value) {
+				span.innerHTML = inputBox.value;
+
+				listElement.appendChild(span);
+				listElement.appendChild(createEditButton());
+				listElement.appendChild(createRemoveButton());
+				list.appendChild(listElement);
+
+				validate();
+			} else {
+				errors.push("Can't submit if you have nothing to add, son.");
+				validate();
+			}
+
+			inputBox.value = "";
+
+		}
+
+		function removeItem() {
+			var parent = this.parentNode.parentNode, //ul
+				child = this.parentNode; //li
+			parent.removeChild(child);
+
+		}
+
+		function editItem() {
+			var currentText = this.previousSibling.innerHTML;
+			var span = this.previousSibling;
+
+			span.innerHTML = "<input type='text' value='"+currentText+"' >";
+
+			//Change edit button to save button
+			this.setAttribute("id", config.saveButtonId);
+			this.innerHTML = config.saveButtonText;
+			this.removeEventListener("click", editItem);
+			this.addEventListener("click", saveItem);
+
+		}
+
+		function saveItem() {
+			var currentText = this.previousSibling.childNodes[0].value;
+			var span = this.previousSibling;
+
+			if (currentText != "") {
+
+				span.innerHTML = currentText;
+
+				//Change save button to edit button
+				this.setAttribute("id", config.editButtonId);
+				this.innerHTML = config.editButtonText;
+				this.removeEventListener("click", saveItem);
+				this.addEventListener("click", editItem);
+
+			} else {
+				errors.push("Please enter a task.");
+				validate();
+			}
+
+		}
 })(config);
